@@ -1,0 +1,109 @@
+POST http://localhost:8080/user
+Content-Type: application/json
+
+{"name":  "ddf",
+"surname":  "dfgg"}
+
+###
+POST http://localhost:8080/api/trolleyCart/addProduct
+Content-Type: application/json
+
+{
+  "productId": 1,
+  "ilosc": 12,
+  "uzytkownikId": 1
+
+}
+
+###
+POST http://localhost:8080/api/trolleyCart
+Content-Type: application/json
+
+[{"quantity": 102,
+  "product": {"id": 1}
+}]
+
+###
+POST http://localhost:8080/unit
+Content-Type: application/json
+
+{"city": "Cracow",
+"department": {
+"id": 1
+},
+"employee": {"id": 10}}
+
+###
+POST http://localhost:8080/api/product
+Content-Type: application/json
+
+{"color": "red",
+  "name": "tomatto",
+  "pieces": 123,
+  "price": 12.90,
+  "weight": 0.50,
+  "department": {
+    "id": 2
+  }
+}
+
+###
+POST http://localhost:8080/api/employee
+Content-Type: application/json
+
+{"name": "basiaa",
+"city": "Katowice",
+  "pesel": "29453",
+  "surname": "dfgh",
+"department":{"id": 1}
+
+}
+
+###
+POST http://localhost:8080/department
+Content-Type: application/json
+
+
+{
+  "name": "miesny",
+  "postalCode": "34-000",
+  "city": "Katowice"
+}
+
+###
+
+
+###
+POST http://localhost:8080/department
+Content-Type: application/json
+
+{
+  "name": "remotnowka",
+  "postalCode": "34-000",
+  "city": "Cracow"
+}
+
+###
+POST http://localhost:80/api/item
+Content-Type: application/json
+
+{}
+
+###
+GET http://localhost:8080/api/product
+Accept: application/json
+
+###
+POST http://localhost:8080/api/product/edit/2
+Content-Type: application/json
+
+{
+  "name": "apple9",
+  "price": 129.890,
+  "color": "blue",
+  "weight": 42
+}
+
+
+###
+DELETE http://localhost:8080/api/product/1
