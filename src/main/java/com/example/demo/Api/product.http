@@ -16,12 +16,9 @@ Content-Type: application/json
 }
 
 ###
-POST http://localhost:8080/api/trolleyCart
-Content-Type: application/json
+POST http://localhost:8080/api/trolleyCart/buy/1
 
-[{"quantity": 102,
-  "product": {"id": 1}
-}]
+
 
 ###
 POST http://localhost:8080/unit

@@ -4,6 +4,7 @@ import com.example.demo.CartItem.CartItemEntity;
 import com.example.demo.DTO.AddProductRequest;
 import com.example.demo.DTO.InsufficientProductQuantityException;
 import com.example.demo.DTO.ProductNotFoundException;
+import com.example.demo.DTO.TrolleyCartNotFoundException;
 import com.example.demo.Product.ProductEntity;
 import lombok.AllArgsConstructor;
 import org.hibernate.annotations.NotFound;
@@ -45,12 +46,22 @@ public class TrolleyCartController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred");
         }
     }
+
+
+    @PostMapping("/buy/{userId}")
+    public ResponseEntity<String> buy(@PathVariable Long userId) {
+        try {
+            trolleyCartService.buy(userId);
+            return ResponseEntity.ok("Purchase successful");
+        } catch (InsufficientProductQuantityException e) {
+            return ResponseEntity.badRequest().body("Error: " + e.getMessage());
+        } catch (ProductNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        } catch (TrolleyCartNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Internal Server Error");
+        }
+    }
 }
 
-
-//    @PostMapping
-//    public ResponseEntity<List<ProductEntity>> buy(@RequestBody List<TrolleyCartEntity> listp){
-//       return trolleyCartService.buy(listp)
-//                .map(ResponseEntity::ok)
-//                .orElse(ResponseEntity.notFound().build());
-//    }

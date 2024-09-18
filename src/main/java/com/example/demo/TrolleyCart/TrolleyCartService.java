@@ -25,19 +25,40 @@ public class TrolleyCartService {
     private final UserRepository userRepository;
     private final CartItemRepository cartItemRepository;
 
-//    @Transactional
-//    public Optional<List<ProductEntity>> buy(List<TrolleyCartEntity> listP) {
-//        List<ProductEntity> foundPRodu = productRepository
-//                .findAllById(listP.stream()
-//                        .map(e->e.getId());
-//        if (foundPRodu.isEmpty()) {
-//            return Optional.empty();
-//        }
-//        foundPRodu.forEach(product -> product.setPieces(product.getPieces() - trolleyCartRepository
-//                .findByProductId(product.getId()).getQuantity()));
-//        productRepository.saveAll(foundPRodu);
-//        return Optional.of(foundPRodu);
-//    }
+    @Transactional
+    public void buy(Long userId) {
+
+        Optional<TrolleyCartEntity> trolleycart = trolleyCartRepository.findByUserEntity_Id(userId);
+        List<CartItemEntity> cartItems = trolleycart.get().getCartItems();
+
+        cartItems.forEach(e -> {
+            Optional<ProductEntity> productOpt = productRepository.findById(e.getProduct().getId());
+            if (productOpt.isPresent()) {
+                ProductEntity product = productOpt.get();
+//                Long newQuantity = product.getPieces() - e.getQuantity();
+                int orderedQuantity = e.getQuantity();
+//
+//                // Pobierz ilość dostępnych sztuk produktu
+                Long availableQuantity = product.getPieces();
+//
+//                // Oblicz nową ilość dostępną po zamówieniu
+                Long newQuantity = availableQuantity - orderedQuantity;
+
+                if (newQuantity < 0) {
+                    throw new InsufficientProductQuantityException("too much quantity, you can only " + product.getPieces());
+                }
+                product.setPieces(newQuantity);
+                productRepository.save(product);
+
+            } else {
+                // Obsłuż przypadek, gdy produkt nie istnieje
+                throw new ProductNotFoundException("Product not found for ID: " + e.getProduct().getId());
+            }
+
+        });
+
+
+    }
 
     @Transactional
     public Optional<CartItemEntity> add(Long productId, int quantity, Long idUser) {
