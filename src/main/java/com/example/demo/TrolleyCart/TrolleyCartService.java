@@ -1,6 +1,9 @@
 package com.example.demo.TrolleyCart;
 
-import aj.org.objectweb.asm.commons.Remapper;
+import com.example.demo.Archieve.OrderEntity;
+import com.example.demo.Archieve.OrderItemEntity;
+import com.example.demo.Archieve.OrderItemRepository;
+import com.example.demo.Archieve.OrderRepository;
 import com.example.demo.CartItem.CartItemEntity;
 import com.example.demo.CartItem.CartItemRepository;
 import com.example.demo.DTO.InsufficientProductQuantityException;
@@ -13,6 +16,8 @@ import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -24,24 +29,29 @@ public class TrolleyCartService {
     private final ProductRepository productRepository;
     private final UserRepository userRepository;
     private final CartItemRepository cartItemRepository;
+    private final OrderItemRepository orderItemRepository;
+    private final OrderRepository orderRepository;
 
     @Transactional
     public void buy(Long userId) {
 
         Optional<TrolleyCartEntity> trolleycart = trolleyCartRepository.findByUserEntity_Id(userId);
         List<CartItemEntity> cartItems = trolleycart.get().getCartItems();
+        // Tworzenie nowego zamówienia
+        OrderEntity orderEntity = new OrderEntity();
+        orderEntity.setUser(trolleycart.get().getUserEntity()); // Przypisanie użytkownika
+        orderEntity.setOrderDate(LocalDateTime.now()); // Ustawienie daty zamówienia
+
 
         cartItems.forEach(e -> {
             Optional<ProductEntity> productOpt = productRepository.findById(e.getProduct().getId());
             if (productOpt.isPresent()) {
+
+
                 ProductEntity product = productOpt.get();
-//                Long newQuantity = product.getPieces() - e.getQuantity();
+
                 int orderedQuantity = e.getQuantity();
-//
-//                // Pobierz ilość dostępnych sztuk produktu
                 Long availableQuantity = product.getPieces();
-//
-//                // Oblicz nową ilość dostępną po zamówieniu
                 Long newQuantity = availableQuantity - orderedQuantity;
 
                 if (newQuantity < 0) {
@@ -49,15 +59,44 @@ public class TrolleyCartService {
                 }
                 product.setPieces(newQuantity);
                 productRepository.save(product);
+//                // Tworzenie pozycji zamówienia
+                OrderItemEntity orderItemEntity = new OrderItemEntity();
+                orderItemEntity.setOrderEntity(orderEntity);
+                orderItemEntity.setProduct(product);
+                orderItemEntity.setQuantity(orderedQuantity);
+                orderItemEntity.setPriceAtPurchase(product.getPrice());
+                orderItemRepository.save(orderItemEntity);
 
             } else {
-                // Obsłuż przypadek, gdy produkt nie istnieje
                 throw new ProductNotFoundException("Product not found for ID: " + e.getProduct().getId());
             }
-
+            BigDecimal totalAmount = calculateTotalAmount(cartItems);
+            orderEntity.setTotalAmount(totalAmount);
+            orderRepository.save(orderEntity);
+            cartItemRepository.deleteAll(cartItems);
+            trolleyCartRepository.delete(trolleycart.get());
+//            //
+//            cartItemRepository.deleteAll(cartItems);
+//            trolleycart.get().setCartItems(new ArrayList<>());
+//            trolleyCartRepository.save(trolleycart.get());
         });
 
 
+    }
+    public BigDecimal calculateTotalAmount(List<CartItemEntity> cartItems) {
+        BigDecimal totalAmount;
+
+        totalAmount = cartItems.stream()
+                .map(item -> {
+                    BigDecimal price = BigDecimal.valueOf(item.getProduct().getPrice());
+
+                    BigDecimal quantity = BigDecimal.valueOf(item.getQuantity());
+
+                    return price.multiply(quantity);
+                })
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        return totalAmount;
     }
 
     @Transactional
