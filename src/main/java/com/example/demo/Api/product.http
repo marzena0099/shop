@@ -1,3 +1,56 @@
+POST http://localhost:8080/api/employee/15/address
+Content-Type: application/json
+
+{
+"postalCode": "3040",
+  "street": "aadfgg",
+  "country": "apo",
+  "addressType": "RESIDENTIAL",
+  "city": "dfgh"
+}
+
+###
+POST http://localhost:8080/api/address
+Content-Type: application/json
+
+{"addressType": "RESIDENTIAL",
+"city": "Cracow",
+"country": "Poland",
+"postalCode": "32-590",
+  "street": "Wilcza"
+}
+
+###
+POST http://localhost:8080/api/employee/address
+Content-Type: application/json
+
+{"addressType": "RESIDENTIAL",
+  "city": "Cracow",
+  "country": "Poland",
+  "postalCode": "32-590",
+  "street": "Wilcza",
+  "employee": {
+    "id": 14
+  }
+}
+
+###
+POST http://localhost:8080/api/employee
+Content-Type: application/json
+
+{"name":"kasia",
+  "pesel": 2345,
+  "surname": "dfgg",
+  "department": {
+    "id": 1
+  },
+"degree": "JUNIOR",
+  "position": {
+    "id": 1
+  }
+}
+
+###
 POST http://localhost:8080/user
 Content-Type: application/json
 

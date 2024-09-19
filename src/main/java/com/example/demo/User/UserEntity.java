@@ -17,10 +17,11 @@ public class UserEntity {
     Long id;
     String name;
     String surname;
+    String email;
+    String telephone;
     @OneToOne(mappedBy = "userEntity", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private TrolleyCartEntity trolleyCart;
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "user_id")
-    private List<AddressEntity> addressEntities = new ArrayList<>();
 
+@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+private List<AddressEntity> addresses;
 }
