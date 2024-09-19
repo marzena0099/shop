@@ -1,3 +1,24 @@
+POST http://localhost:8080/user/4/address
+Content-Type: application/json
+
+{"city": "Libiaz",
+  "addressType": "SHIPPING",
+  "street": "dfgg",
+  "country": "poland",
+  "postalCode": "345-55"
+}
+
+###
+POST http://localhost:8080/user
+Content-Type: application/json
+
+{"surname":"dkdk",
+"name": "fgg",
+  "email": "fkfk@gmail.com",
+  "telephone": "1234567"
+}
+
+###
 POST http://localhost:8080/api/employee/15/address
 Content-Type: application/json
 
