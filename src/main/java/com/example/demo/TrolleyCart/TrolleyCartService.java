@@ -35,21 +35,25 @@ public class TrolleyCartService {
     @Transactional
     public void buy(Long userId) {
 
-        Optional<TrolleyCartEntity> trolleycart = trolleyCartRepository.findByUserEntity_Id(userId);
-        List<CartItemEntity> cartItems = trolleycart.get().getCartItems();
-        // Tworzenie nowego zamówienia
-        OrderEntity orderEntity = new OrderEntity();
-        orderEntity.setUser(trolleycart.get().getUserEntity()); // Przypisanie użytkownika
-        orderEntity.setOrderDate(LocalDateTime.now()); // Ustawienie daty zamówienia
+        Optional<TrolleyCartEntity> Opttrolleycart = trolleyCartRepository.findByUserEntity_Id(userId);
+        if(Opttrolleycart.isEmpty()){
+            throw new RuntimeException("not found trolleyCart");
+        }
+        TrolleyCartEntity trolleycart = Opttrolleycart.get();
+        List<CartItemEntity> cartItems = trolleycart.getCartItems();
+        OrderEntity orderEntity = createNewOrder(trolleycart);
+        updateQuantityProduct(cartItems, orderEntity, trolleycart);
+//tworzenie nowego zamowienia
+        //kazdemmu produktowi, ktory znajduje sie w koszyku zmniejszamy ilosc dostepnego produktu
+        //tworzenie pozycji zamowienia
 
+    }
 
+    public void updateQuantityProduct(List<CartItemEntity> cartItems, OrderEntity orderEntity, TrolleyCartEntity trolleycart) {
         cartItems.forEach(e -> {
             Optional<ProductEntity> productOpt = productRepository.findById(e.getProduct().getId());
             if (productOpt.isPresent()) {
-
-
                 ProductEntity product = productOpt.get();
-
                 int orderedQuantity = e.getQuantity();
                 Long availableQuantity = product.getPieces();
                 Long newQuantity = availableQuantity - orderedQuantity;
@@ -59,13 +63,7 @@ public class TrolleyCartService {
                 }
                 product.setPieces(newQuantity);
                 productRepository.save(product);
-//                // Tworzenie pozycji zamówienia
-                OrderItemEntity orderItemEntity = new OrderItemEntity();
-                orderItemEntity.setOrderEntity(orderEntity);
-                orderItemEntity.setProduct(product);
-                orderItemEntity.setQuantity(orderedQuantity);
-                orderItemEntity.setPriceAtPurchase(product.getPrice());
-                orderItemRepository.save(orderItemEntity);
+                createNewOrderItem(orderEntity, product, orderedQuantity);
 
             } else {
                 throw new ProductNotFoundException("Product not found for ID: " + e.getProduct().getId());
@@ -74,15 +72,27 @@ public class TrolleyCartService {
             orderEntity.setTotalAmount(totalAmount);
             orderRepository.save(orderEntity);
             cartItemRepository.deleteAll(cartItems);
-            trolleyCartRepository.delete(trolleycart.get());
-//            //
-//            cartItemRepository.deleteAll(cartItems);
-//            trolleycart.get().setCartItems(new ArrayList<>());
-//            trolleyCartRepository.save(trolleycart.get());
+            trolleyCartRepository.delete(trolleycart);
+
         });
-
-
     }
+
+    public void createNewOrderItem(OrderEntity orderEntity, ProductEntity product, int orderedQuantity) {
+        OrderItemEntity orderItemEntity = new OrderItemEntity();
+        orderItemEntity.setOrderEntity(orderEntity);
+        orderItemEntity.setProduct(product);
+        orderItemEntity.setQuantity(orderedQuantity);
+        orderItemEntity.setPriceAtPurchase(product.getPrice());
+        orderItemRepository.save(orderItemEntity);
+    }
+
+    public OrderEntity createNewOrder(TrolleyCartEntity trolleycart) {
+        OrderEntity orderEntity = new OrderEntity();
+        orderEntity.setUser(trolleycart.getUserEntity());
+        orderEntity.setOrderDate(LocalDateTime.now());
+        return orderEntity;
+    }
+
     public BigDecimal calculateTotalAmount(List<CartItemEntity> cartItems) {
         BigDecimal totalAmount;
 
