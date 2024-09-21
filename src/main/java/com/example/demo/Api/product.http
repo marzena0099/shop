@@ -20,8 +20,7 @@ Content-Type: application/json
 
 ###
 POST http://localhost:8080/api/trolleyCart/buy?userId=4&BillingId=17&shippingId=18
-###
-POST http://localhost:8080/api/trolleyCart/nc/6
+
 
 ###
 DELETE http://localhost:8080/api/employee/10
@@ -114,9 +113,9 @@ POST http://localhost:8080/api/trolleyCart/addProduct
 Content-Type: application/json
 
 {
-  "productId": 1,
+  "productId": 2,
   "ilosc": 12,
-  "uzytkownikId": 1
+  "uzytkownikId": 4
 
 }
 

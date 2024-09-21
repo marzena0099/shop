@@ -22,10 +22,7 @@ import java.util.Optional;
 @RequestMapping("/api/trolleyCart")
 public class TrolleyCartController {
     private final TrolleyCartService trolleyCartService;
-@PostMapping("/nc/{id}")
-public void nc(@PathVariable Long id){
-    trolleyCartService.b2(id);
-}
+
     @PostMapping("/addProduct")
     public ResponseEntity<Object> add(@RequestBody AddProductRequest addProductRequest) {
         Long productId = addProductRequest.getProductId();
