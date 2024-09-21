@@ -5,6 +5,8 @@ import com.example.demo.Employee.EmployeeEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 import org.springframework.web.bind.annotation.RestController;
 
 @Data
@@ -17,9 +19,8 @@ public class UnitEntity {
     @OneToOne(cascade = CascadeType.REMOVE)
     @JoinColumn(name = "deparment_id")
     private DepartmentEntity department;
-    @ManyToOne(cascade = CascadeType.REMOVE)
-    @JoinColumn(name="employee_id")
+    @ManyToOne
+    @JoinColumn(name = "employee_id", nullable = true)
+    @OnDelete(action = OnDeleteAction.SET_NULL)
     private EmployeeEntity employee;
-
-
 }

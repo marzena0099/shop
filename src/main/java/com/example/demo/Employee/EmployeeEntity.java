@@ -4,9 +4,15 @@ import com.example.demo.Address.AddressEntity;
 import com.example.demo.Department.DepartmentEntity;
 import com.example.demo.ENUM.Degree;
 import com.example.demo.Position.PositionEntity;
+import com.example.demo.Unit.UnitEntity;
 import jakarta.persistence.*;
 import lombok.Data;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 import org.springframework.boot.autoconfigure.web.WebProperties;
+
+import java.util.List;
+
 @Data
 @Table(name = "employee")
 @Entity
@@ -17,9 +23,11 @@ public class EmployeeEntity {
     String name;
     String surname;
     String PESEL;
-    @ManyToOne(cascade = CascadeType.REMOVE)
-    @JoinColumn(name = "department_id")
+    @ManyToOne
+    @JoinColumn(name = "department_id", nullable = true)
+    @OnDelete(action = OnDeleteAction.SET_NULL)
     private DepartmentEntity department;
+
 
 
     @Enumerated(EnumType.STRING)
@@ -33,4 +41,5 @@ public class EmployeeEntity {
 @OneToOne(cascade = CascadeType.ALL)
 @JoinColumn(name = "address_id", referencedColumnName = "id")
 private AddressEntity address;
+
 }
