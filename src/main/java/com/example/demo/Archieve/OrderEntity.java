@@ -6,6 +6,8 @@ import com.example.demo.Employee.EmployeeEntity;
 import com.example.demo.User.UserEntity;
 import jakarta.persistence.*;
 import lombok.Data;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -31,7 +33,9 @@ public class OrderEntity {
     private BigDecimal totalAmount;
     @ManyToOne
     @JoinColumn(name = "employee_id", nullable = true)
+    @OnDelete(action = OnDeleteAction.SET_NULL)
     private EmployeeEntity employee;
+
 
     @Enumerated(EnumType.STRING)
     private OrderStatus status;

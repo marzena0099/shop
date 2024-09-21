@@ -25,8 +25,8 @@ public class EmployeeEntity {
     String PESEL;
     @ManyToOne
     @JoinColumn(name = "department_id", nullable = true)
-    @OnDelete(action = OnDeleteAction.SET_NULL)
     private DepartmentEntity department;
+
 
 
 

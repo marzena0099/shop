@@ -27,7 +27,7 @@ POST http://localhost:8080/api/trolleyCart/buy?userId=4&BillingId=17&shippingId=
 
 
 ###
-DELETE http://localhost:8080/api/employee/10
+DELETE http://localhost:8080/api/employee/14
 
 
 
