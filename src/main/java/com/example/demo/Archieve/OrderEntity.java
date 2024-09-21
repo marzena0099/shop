@@ -2,6 +2,7 @@ package com.example.demo.Archieve;
 
 import com.example.demo.Address.AddressEntity;
 import com.example.demo.ENUM.OrderStatus;
+import com.example.demo.Employee.EmployeeEntity;
 import com.example.demo.User.UserEntity;
 import jakarta.persistence.*;
 import lombok.Data;
@@ -28,7 +29,9 @@ public class OrderEntity {
     private LocalDateTime orderDate;
 
     private BigDecimal totalAmount;
-
+    @ManyToOne
+    @JoinColumn(name = "employee_id", nullable = true)
+    private EmployeeEntity employee;
 
     @Enumerated(EnumType.STRING)
     private OrderStatus status;
@@ -43,4 +46,6 @@ public class OrderEntity {
 
     @OneToMany(mappedBy = "orderEntity", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderItemEntity> orderItems = new ArrayList<>();
+
+
 }

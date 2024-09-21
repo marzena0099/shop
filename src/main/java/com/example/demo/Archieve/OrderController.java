@@ -27,4 +27,9 @@ public class OrderController {
     public OrderEntity createOrder(Long userId, Long shippingAddressId, Long billingAddressId){
         return orderService.createOrder(userId,shippingAddressId,billingAddressId);
     }
+    @PostMapping("/addWorkerToOrder")
+    public ResponseEntity<Void> addWorker(@RequestParam Long orderId, @RequestParam Long workerId){
+        orderService.addWorkerToOrder(orderId,workerId);
+        return ResponseEntity.ok().build();
+    }
 }

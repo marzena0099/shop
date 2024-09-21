@@ -1,3 +1,7 @@
+POST http://localhost:8080/api/order/addWorkerToOrder?orderId=44&workerId=14
+
+
+###
 POST http://localhost:8080/api/product
 Content-Type: application/json
 

@@ -7,10 +7,14 @@ import com.example.demo.DTO.AddressNotFoundException;
 import com.example.demo.DTO.OrderNotFoundException;
 import com.example.demo.DTO.UserNotFoundException;
 import com.example.demo.ENUM.OrderStatus;
+import com.example.demo.Employee.EmployeeEntity;
+import com.example.demo.Employee.EmployeeRepository;
 import com.example.demo.User.UserEntity;
 import com.example.demo.User.UserRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import java.util.Optional;
 
 @Service
 @AllArgsConstructor
@@ -19,7 +23,7 @@ public class OrderService {
     private OrderRepository orderRepository;
 
     private AddressRepository addressRepository;
-
+private EmployeeRepository employeeRepository;
     private UserRepository userRepository;
 
     public void updateOrderStatus(Long orderId, OrderStatus newStatus) {
@@ -56,14 +60,17 @@ public class OrderService {
     }
 
 
-    public void markOrderAsShipped(Long orderId) {
+    public void addWorkerToOrder(Long orderId, Long employeeId) {
         OrderEntity orderEntity = orderRepository.findById(orderId)
                 .orElseThrow(() -> new OrderNotFoundException("Order not found for ID: " + orderId));
-        if (orderEntity.getStatus() == OrderStatus.PROCESSING) {
-            orderEntity.setStatus(OrderStatus.SHIPPED);
+        if (orderEntity.getStatus() == OrderStatus.PENDING) {
+            orderEntity.setStatus(OrderStatus.PROCESSING);
+            EmployeeEntity employee = employeeRepository.findById(employeeId)
+                            .orElseThrow(()-> new RuntimeException("not found employee"));
+            orderEntity.setEmployee(employee);
             orderRepository.save(orderEntity);
         } else {
-            throw new IllegalStateException("Order must be in PROCESSING status to be marked as SHIPPED");
+            throw new IllegalStateException("Order must be in PENDING status to be marked as PROCESSING");
         }
     }
 }
