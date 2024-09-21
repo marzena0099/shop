@@ -8,8 +8,10 @@ import lombok.Data;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
-@Table(name = "OrderTable")
+@Table(name = "order_table")
 @Entity
 @Data
 public class OrderEntity {
@@ -18,7 +20,9 @@ public class OrderEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+
     @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false)  // Powiązanie z użytkownikiem
     private UserEntity user;
 
     private LocalDateTime orderDate;
@@ -32,7 +36,11 @@ public class OrderEntity {
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "shipping_address_id")
     private AddressEntity shippingAddressEntity;
+
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "billing_address_id")
     private AddressEntity billingAddressEntity;
+
+    @OneToMany(mappedBy = "orderEntity", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<OrderItemEntity> orderItems = new ArrayList<>();
 }

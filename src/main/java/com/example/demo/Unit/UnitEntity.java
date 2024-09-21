@@ -20,4 +20,6 @@ public class UnitEntity {
     @ManyToOne(cascade = CascadeType.REMOVE)
     @JoinColumn(name="employee_id")
     private EmployeeEntity employee;
+
+
 }

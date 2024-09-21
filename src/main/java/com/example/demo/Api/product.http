@@ -1,4 +1,27 @@
-POST http://localhost:8080/api/trolleyCart/buy/1
+POST http://localhost:8080/api/product
+Content-Type: application/json
+
+{"color": "yellow",
+"name":  "banana",
+"pieces": 400,
+"price": 1.00,
+"weight": 0.5,
+"department": {
+  "id": 1
+}}
+
+###
+POST http://localhost:8080/api/trolleyCart/addProduct
+Content-Type: application/json
+
+{"ilosc": 1,
+"productId": 2,
+"uzytkownikId": 4}
+
+###
+POST http://localhost:8080/api/trolleyCart/buy?userId=4&BillingId=17&shippingId=18
+###
+POST http://localhost:8080/api/trolleyCart/nc/6
 
 
 

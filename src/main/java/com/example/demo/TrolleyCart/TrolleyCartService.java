@@ -1,5 +1,6 @@
 package com.example.demo.TrolleyCart;
 
+import com.example.demo.Address.AddressRepository;
 import com.example.demo.Archieve.OrderEntity;
 import com.example.demo.Archieve.OrderItemEntity;
 import com.example.demo.Archieve.OrderItemRepository;
@@ -31,65 +32,82 @@ public class TrolleyCartService {
     private final CartItemRepository cartItemRepository;
     private final OrderItemRepository orderItemRepository;
     private final OrderRepository orderRepository;
+    private final AddressRepository addressRepository;
+
 
     @Transactional
-    public void buy(Long userId) {
-
-        Optional<TrolleyCartEntity> Opttrolleycart = trolleyCartRepository.findByUserEntity_Id(userId);
-        if(Opttrolleycart.isEmpty()){
+    public void b2(Long CartItemId){
+Optional<CartItemEntity> cart = cartItemRepository.findById(CartItemId);
+        cartItemRepository.deleteById(CartItemId);
+        cartItemRepository.flush();
+    }
+    @Transactional
+    public void buy(Long userId, Long billing, long shipping) {
+//        Optional<TrolleyCartEntity> tro =trolleyCartRepository.findById(userId);
+        Optional<TrolleyCartEntity> optionalTrolleyCartEntity = trolleyCartRepository.findByUserEntity_Id(userId);
+        if (optionalTrolleyCartEntity.isEmpty()) {
             throw new RuntimeException("not found trolleyCart");
         }
-        TrolleyCartEntity trolleycart = Opttrolleycart.get();
+        TrolleyCartEntity trolleycart = optionalTrolleyCartEntity.get();
         List<CartItemEntity> cartItems = trolleycart.getCartItems();
-        OrderEntity orderEntity = createNewOrder(trolleycart);
-        updateQuantityProduct(cartItems, orderEntity, trolleycart);
-//tworzenie nowego zamowienia
-        //kazdemmu produktowi, ktory znajduje sie w koszyku zmniejszamy ilosc dostepnego produktu
-        //tworzenie pozycji zamowienia
+        OrderEntity orderEntity = createNewOrder(trolleycart, billing, shipping);
+        updateQuantityProduct1(cartItems, orderEntity, trolleycart);
+        createNewOrderItem1(orderEntity,cartItems);
+        BigDecimal totalAmount = calculateTotalAmount(cartItems);
+        orderEntity.setTotalAmount(totalAmount);
+//        orderRepository.save(orderEntity);
+        trolleycart.getCartItems().clear();
+        trolleyCartRepository.save(trolleycart);
+
 
     }
 
-    public void updateQuantityProduct(List<CartItemEntity> cartItems, OrderEntity orderEntity, TrolleyCartEntity trolleycart) {
+    @Transactional
+    public void deleteCartItems(List<CartItemEntity> cartItems) {
+        cartItemRepository.flush();
+        cartItemRepository.deleteAll(cartItems);
+        cartItemRepository.flush();
+    }
+    public void updateQuantityProduct1(List<CartItemEntity> cartItems, OrderEntity orderEntity, TrolleyCartEntity trolleycart) {
         cartItems.forEach(e -> {
             Optional<ProductEntity> productOpt = productRepository.findById(e.getProduct().getId());
             if (productOpt.isPresent()) {
                 ProductEntity product = productOpt.get();
-                int orderedQuantity = e.getQuantity();
+                Long orderedQuantity = e.getQuantity();
                 Long availableQuantity = product.getPieces();
                 Long newQuantity = availableQuantity - orderedQuantity;
 
                 if (newQuantity < 0) {
-                    throw new InsufficientProductQuantityException("too much quantity, you can only " + product.getPieces());
+                    throw new InsufficientProductQuantityException("too much quantity, you can only " + product.getPieces() +"procuct name: " +product.getName() );
                 }
                 product.setPieces(newQuantity);
                 productRepository.save(product);
-                createNewOrderItem(orderEntity, product, orderedQuantity);
+//                createNewOrderItem(orderEntity, product, orderedQuantity);
 
             } else {
                 throw new ProductNotFoundException("Product not found for ID: " + e.getProduct().getId());
             }
-            BigDecimal totalAmount = calculateTotalAmount(cartItems);
-            orderEntity.setTotalAmount(totalAmount);
-            orderRepository.save(orderEntity);
-            cartItemRepository.deleteAll(cartItems);
-            trolleyCartRepository.delete(trolleycart);
-
         });
     }
 
-    public void createNewOrderItem(OrderEntity orderEntity, ProductEntity product, int orderedQuantity) {
-        OrderItemEntity orderItemEntity = new OrderItemEntity();
-        orderItemEntity.setOrderEntity(orderEntity);
-        orderItemEntity.setProduct(product);
-        orderItemEntity.setQuantity(orderedQuantity);
-        orderItemEntity.setPriceAtPurchase(product.getPrice());
-        orderItemRepository.save(orderItemEntity);
+    public void createNewOrderItem1(OrderEntity orderEntity, List<CartItemEntity> cartItems){ //ProductEntity product, int orderedQuantity) {
+        cartItems.forEach(e-> {
+            OrderItemEntity orderItemEntity = new OrderItemEntity();
+            orderItemEntity.setOrderEntity(orderEntity);
+            orderItemEntity.setProduct(e.getProduct());
+            orderItemEntity.setQuantity(e.getProduct().getPieces());
+            orderItemEntity.setPriceAtPurchase(e.getProduct().getPrice());
+            orderItemRepository.save(orderItemEntity);
+        });
     }
 
-    public OrderEntity createNewOrder(TrolleyCartEntity trolleycart) {
+    public OrderEntity createNewOrder(TrolleyCartEntity trolleycart, Long billing, Long shipping) {
         OrderEntity orderEntity = new OrderEntity();
         orderEntity.setUser(trolleycart.getUserEntity());
         orderEntity.setOrderDate(LocalDateTime.now());
+        orderEntity.setBillingAddressEntity(addressRepository.getReferenceById(billing));
+        orderEntity.setShippingAddressEntity(addressRepository.getReferenceById(shipping));
+        orderRepository.save(orderEntity);
         return orderEntity;
     }
 
@@ -110,48 +128,61 @@ public class TrolleyCartService {
     }
 
     @Transactional
-    public Optional<CartItemEntity> add(Long productId, int quantity, Long idUser) {
-        Optional<UserEntity> user = userRepository.findById(idUser);
-        // Sprawdzamy, czy ilość produktu jest dostępna
+    public CartItemEntity add(Long productId, Long quantity, Long idUser) {
+        ProductEntity product = checkAvailabilityProduct(productId, quantity);
+
+        TrolleyCartEntity trolleyCart = trolleyCartRepository.findByUserEntity_Id(idUser)
+                .orElseGet(() ->
+                        createNewTrolley(idUser)
+                );
+        Optional<CartItemEntity> existingCartItem = cartItemRepository.
+                findByProductIdAndTrolleyCartId(productId, trolleyCart.getId());
+
+        if (existingCartItem.isPresent()) {
+           return updateQuantityProduct(quantity, existingCartItem.get());
+
+        } else {
+          return createNewProductInTrolley(product,quantity,trolleyCart);
+
+        }
+
+    }
+
+public CartItemEntity createNewProductInTrolley(ProductEntity product, Long quantity, TrolleyCartEntity trolleyCart){
+    CartItemEntity newCartItem = new CartItemEntity();
+    newCartItem.setProduct(product);
+    newCartItem.setQuantity(quantity);
+    newCartItem.setTrolleyCart(trolleyCart);
+    cartItemRepository.save(newCartItem);
+
+    trolleyCart.getCartItems().add(newCartItem);
+    trolleyCartRepository.save(trolleyCart);
+
+    return newCartItem;
+}
+
+    public CartItemEntity updateQuantityProduct(Long quantity, CartItemEntity existingCartItem) {
+        existingCartItem.setQuantity(quantity);
+        cartItemRepository.save(existingCartItem);
+        return existingCartItem;
+    }
+
+    public ProductEntity checkAvailabilityProduct(Long productId, Long quantity) {
         ProductEntity product = productRepository.findById(productId)
                 .orElseThrow(() -> new ProductNotFoundException("Product not found"));
         if (product.getPieces() < quantity) {
             throw new InsufficientProductQuantityException("Not enough pieces of product");
         }
+        return product;
+    }
 
-        // Sprawdzamy, czy użytkownik ma już koszyk
-        TrolleyCartEntity trolleyCart = trolleyCartRepository.findByUserEntity_Id(idUser)
-                .orElseGet(() -> {
-                    // Tworzymy nowy koszyk, jeśli go nie ma
-                    TrolleyCartEntity newCart = new TrolleyCartEntity();
-                    newCart.setUserEntity(user.get());
-                    newCart.setCartItems(new ArrayList<>()); // Pusta lista produktów na początek
-                    trolleyCartRepository.save(newCart);
-                    return newCart;
-                });
-        // Sprawdzamy, czy ten produkt już istnieje w koszyku
-        Optional<CartItemEntity> existingCartItem = cartItemRepository.findByProductIdAndTrolleyCartId(productId, trolleyCart.getId()); //czy nie trzeba id
-
-        if (existingCartItem.isPresent()) {
-            // Jeśli produkt jest już w koszyku, zwiększamy ilość
-            CartItemEntity cartItem = existingCartItem.get();
-            cartItem.setQuantity(quantity);
-            cartItemRepository.save(cartItem);
-            return Optional.of(cartItem);
-        } else {
-            // Jeśli produkt nie istnieje, tworzymy nowy element koszyka
-            CartItemEntity newCartItem = new CartItemEntity();
-            newCartItem.setProduct(product);
-            newCartItem.setQuantity(quantity);
-            newCartItem.setTrolleyCart(trolleyCart);
-            cartItemRepository.save(newCartItem);
-
-            // Dodajemy nowy element do listy przedmiotów w koszyku
-            trolleyCart.getCartItems().add(newCartItem);
-            trolleyCartRepository.save(trolleyCart);
-
-            return Optional.of(newCartItem);
-        }
+    public TrolleyCartEntity createNewTrolley(Long idUser) {
+        Optional<UserEntity> user = userRepository.findById(idUser);
+        TrolleyCartEntity newCart = new TrolleyCartEntity();
+        newCart.setUserEntity(user.get());
+        newCart.setCartItems(new ArrayList<>()); // Pusta lista produktów na początek
+        trolleyCartRepository.save(newCart);
+        return newCart;
     }
 
 

@@ -2,6 +2,8 @@ package com.example.demo.User;
 
 import com.example.demo.Address.AddressEntity;
 import com.example.demo.TrolleyCart.TrolleyCartEntity;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -19,9 +21,12 @@ public class UserEntity {
     String surname;
     String email;
     String telephone;
-    @OneToOne(mappedBy = "userEntity", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToOne(mappedBy = "userEntity")
+    @JsonBackReference
     private TrolleyCartEntity trolleyCart;
 
 @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
 private List<AddressEntity> addresses;
+
+
 }

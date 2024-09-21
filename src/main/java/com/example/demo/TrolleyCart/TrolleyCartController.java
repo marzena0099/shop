@@ -1,5 +1,6 @@
 package com.example.demo.TrolleyCart;
 
+import com.example.demo.Address.AddressEntity;
 import com.example.demo.CartItem.CartItemEntity;
 import com.example.demo.DTO.AddProductRequest;
 import com.example.demo.DTO.InsufficientProductQuantityException;
@@ -21,17 +22,20 @@ import java.util.Optional;
 @RequestMapping("/api/trolleyCart")
 public class TrolleyCartController {
     private final TrolleyCartService trolleyCartService;
-
+@PostMapping("/nc/{id}")
+public void nc(@PathVariable Long id){
+    trolleyCartService.b2(id);
+}
     @PostMapping("/addProduct")
     public ResponseEntity<Object> add(@RequestBody AddProductRequest addProductRequest) {
         Long productId = addProductRequest.getProductId();
-        int quantity = addProductRequest.getIlosc();
+        Long quantity = addProductRequest.getIlosc();
         Long userId = addProductRequest.getUzytkownikId();
 
         try {
             // Dodaj przedmiot do koszyka
-            CartItemEntity cartItem = trolleyCartService.add(productId, quantity, userId)
-                    .orElseThrow(() -> new ProductNotFoundException("Product not found in cart"));
+            CartItemEntity cartItem = trolleyCartService.add(productId, quantity, userId);
+//                    .orElseThrow(() -> new ProductNotFoundException("Product not found in cart"));
 
             // Zwróć odpowiedź z dodanym przedmiotem
             return ResponseEntity.ok(cartItem);
@@ -48,10 +52,10 @@ public class TrolleyCartController {
     }
 
 
-    @PostMapping("/buy/{userId}")
-    public ResponseEntity<String> buy(@PathVariable Long userId) {
+    @PostMapping("/buy")
+    public ResponseEntity<String> buy(@RequestParam Long userId, @RequestParam Long BillingId, @RequestParam Long shippingId) {
         try {
-            trolleyCartService.buy(userId);
+            trolleyCartService.buy(userId, BillingId, shippingId);
             return ResponseEntity.ok("Purchase successful");
         } catch (InsufficientProductQuantityException e) {
             return ResponseEntity.badRequest().body("Error: " + e.getMessage());

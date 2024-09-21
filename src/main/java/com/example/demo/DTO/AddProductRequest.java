@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
 
     public class AddProductRequest {
         private Long productId;
-        private int ilosc;
+        private Long ilosc;
         private Long uzytkownikId;
 
     }
