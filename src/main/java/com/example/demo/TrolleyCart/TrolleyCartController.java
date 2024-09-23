@@ -50,19 +50,11 @@ public class TrolleyCartController {
 
 
     @PostMapping("/buy")
-    public ResponseEntity<String> buy(@RequestParam Long userId, @RequestParam Long BillingId, @RequestParam Long shippingId) {
-        try {
-            trolleyCartService.buy(userId, BillingId, shippingId);
-            return ResponseEntity.ok("Purchase successful");
-        } catch (InsufficientProductQuantityException e) {
-            return ResponseEntity.badRequest().body("Error: " + e.getMessage());
-        } catch (ProductNotFoundException e) {
-            return ResponseEntity.notFound().build();
-        } catch (TrolleyCartNotFoundException e) {
-            return ResponseEntity.notFound().build();
-        } catch (Exception e) {
-            return ResponseEntity.status(500).body("Internal Server Error");
-        }
-    }
-}
+    public ResponseEntity<TrolleyCartEntity> buy(@RequestParam Long userId, @RequestParam(required=false) Long BillingId , @RequestParam Long shippingId) {
+        TrolleyCartEntity trolley = trolleyCartService.buy(userId, BillingId, shippingId);
+        return new ResponseEntity<>(trolley, HttpStatus.OK);
 
+
+    }
+
+}

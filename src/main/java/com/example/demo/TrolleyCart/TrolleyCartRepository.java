@@ -18,6 +18,8 @@ boolean existsByUserEntity_Id(Long userId);
 
     Optional<TrolleyCartEntity> findByUserEntity_Id(Long userId);
 
+    TrolleyCartEntity getTrolleyCartEntitiesByUserEntity_Id(Long userId);
+
 //    Optional<TrolleyCartEntity> findByUser_Id(Long userId);
 
 }

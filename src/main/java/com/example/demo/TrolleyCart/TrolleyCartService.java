@@ -1,5 +1,6 @@
 package com.example.demo.TrolleyCart;
 
+import com.example.demo.Address.AddressEntity;
 import com.example.demo.Address.AddressRepository;
 import com.example.demo.Archieve.OrderEntity;
 import com.example.demo.Archieve.OrderItemEntity;
@@ -7,8 +8,10 @@ import com.example.demo.Archieve.OrderItemRepository;
 import com.example.demo.Archieve.OrderRepository;
 import com.example.demo.CartItem.CartItemEntity;
 import com.example.demo.CartItem.CartItemRepository;
+import com.example.demo.DTO.AddressNotFoundException;
 import com.example.demo.DTO.InsufficientProductQuantityException;
 import com.example.demo.DTO.ProductNotFoundException;
+import com.example.demo.DTO.TrolleyCartNotFoundException;
 import com.example.demo.ENUM.OrderStatus;
 import com.example.demo.Product.ProductEntity;
 import com.example.demo.Product.ProductRepository;
@@ -37,20 +40,18 @@ public class TrolleyCartService {
 
 
     @Transactional
-    public void buy(Long userId, Long billing, long shipping) {
-        Optional<TrolleyCartEntity> optionalTrolleyCartEntity = trolleyCartRepository.findByUserEntity_Id(userId);
-        if (optionalTrolleyCartEntity.isEmpty()) {
-            throw new RuntimeException("not found trolleyCart");
+    public TrolleyCartEntity buy(Long userId, Long billing, long shipping) {
+        if(!trolleyCartRepository.existsByUserEntity_Id(userId)){
+            throw new TrolleyCartNotFoundException("not found trolleyCart");
         }
-        TrolleyCartEntity trolleycart = optionalTrolleyCartEntity.get();
-        List<CartItemEntity> cartItems = trolleycart.getCartItems();
-        OrderEntity orderEntity = createNewOrder(trolleycart, billing, shipping, cartItems);
+        TrolleyCartEntity trolleyCart = trolleyCartRepository
+                .getTrolleyCartEntitiesByUserEntity_Id(userId);
+        List<CartItemEntity> cartItems = trolleyCart.getCartItems();
+        OrderEntity orderEntity = createNewOrder(trolleyCart, billing, shipping, cartItems);
         updateQuantityProduct(cartItems);
         createNewOrderItem(orderEntity, cartItems);
-        trolleycart.getCartItems().clear();
-        trolleyCartRepository.save(trolleycart);
-
-
+        trolleyCart.getCartItems().clear();
+       return trolleyCartRepository.save(trolleyCart);
     }
 
     @Transactional
@@ -99,7 +100,11 @@ public class TrolleyCartService {
         OrderEntity orderEntity = new OrderEntity();
         orderEntity.setUser(trolleycart.getUserEntity());
         orderEntity.setOrderDate(LocalDateTime.now());
-        orderEntity.setBillingAddressEntity(addressRepository.getReferenceById(billing));
+            if (billing != null) {
+                AddressEntity billingAddress = addressRepository.findById(billing)
+                        .orElseThrow(() -> new AddressNotFoundException("Billing address not found"));
+                orderEntity.setBillingAddressEntity(billingAddress);
+            }
         orderEntity.setShippingAddressEntity(addressRepository.getReferenceById(shipping));
         orderEntity.setStatus(OrderStatus.PENDING);
         BigDecimal totalAmount = calculateTotalAmount(cartItems);
