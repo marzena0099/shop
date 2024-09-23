@@ -15,13 +15,13 @@ public class UnitService {
     public UnitEntity add(UnitEntity entity) {
         return unitRepository.save(entity);
     }
-@Transactional
+
+    @Transactional
     public Optional<UnitEntity> edit(Long id, UnitEntity unitEntity) {
         Optional<UnitEntity> opt = unitRepository.findById(id);
-        if(!opt.isPresent()){
+        if (!opt.isPresent()) {
             return Optional.empty();
-        }
-        else{
+        } else {
             UnitEntity u = opt.get();
             u.setCity(unitEntity.getCity());
             u.setEmployee(unitEntity.getEmployee());
@@ -30,10 +30,11 @@ public class UnitService {
             return Optional.of(u);
         }
     }
-@Transactional
+
+    @Transactional
     public Optional<UnitEntity> remove(Long id) {
         return unitRepository.findById(id)
-                .map(unit->{
+                .map(unit -> {
                     unitRepository.delete(unit);
                     return unit;
                 });
@@ -41,6 +42,6 @@ public class UnitService {
     }
 
     public List<UnitEntity> get() {
-    return unitRepository.findAll();
+        return unitRepository.findAll();
     }
 }

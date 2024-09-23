@@ -19,6 +19,7 @@ public class UserService {
     private UserRepository userRepository;
     private AddressRepository addressRepository;
 
+    @Transactional
     public UserEntity add(UserEntity user) {
 //        user.setName(abc+user.getName());
         return userRepository.save(user);
@@ -34,6 +35,7 @@ public class UserService {
         return userRepository.save(userEntity);
     }
 
+    @Transactional
     public void remove(Long userId) {
         if(!userRepository.existsById(userId)){
             throw new UserNotFoundException("not found user");
@@ -41,18 +43,13 @@ public class UserService {
         userRepository.deleteById(userId);
 
     }
-
+@Transactional
     public UserEntity addAddressToUser(Long idUser, AddressEntity address) {
-        Optional<UserEntity> userOpt = userRepository.findById(idUser);
-        if (!userOpt.isPresent()) {
-            throw new UserNotFoundException("user not found");
-        }
-        UserEntity user = userOpt.get();
+        UserEntity user = userRepository.findById(idUser)
+                .orElseThrow(()-> new UserNotFoundException("user not found"));
         address.setUser(user);
         user.getAddresses().add(address);
         addressRepository.save(address);
         return userRepository.save(user);
-
-
     }
 }
