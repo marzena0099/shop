@@ -3,8 +3,10 @@ package com.example.demo.User;
 import com.example.demo.Address.AddressEntity;
 import com.example.demo.Address.AddressRepository;
 import com.example.demo.DTO.UserNotFoundException;
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.apache.catalina.User;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.amqp.RabbitConnectionDetails;
 import org.springframework.stereotype.Service;
 
@@ -18,13 +20,31 @@ public class UserService {
     private AddressRepository addressRepository;
 
     public UserEntity add(UserEntity user) {
-    return userRepository.save(user);
+//        user.setName(abc+user.getName());
+        return userRepository.save(user);
     }
 
+    @Transactional
+    public UserEntity edit(UserEntity userEntity) {
+        Long userId = userEntity.getId();
+        if (!userRepository.existsById(userId)) {
+            throw new UserNotFoundException("not found user");
+        }
+        userEntity.setId(userId);
+        return userRepository.save(userEntity);
+    }
 
-    public UserEntity addAddressToUser(Long idUser, AddressEntity address){
+    public void remove(Long userId) {
+        if(!userRepository.existsById(userId)){
+            throw new UserNotFoundException("not found user");
+        }
+        userRepository.deleteById(userId);
+
+    }
+
+    public UserEntity addAddressToUser(Long idUser, AddressEntity address) {
         Optional<UserEntity> userOpt = userRepository.findById(idUser);
-        if(!userOpt.isPresent()){
+        if (!userOpt.isPresent()) {
             throw new UserNotFoundException("user not found");
         }
         UserEntity user = userOpt.get();

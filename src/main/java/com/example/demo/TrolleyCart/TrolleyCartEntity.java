@@ -17,13 +17,13 @@ import java.util.List;
 @Setter
 @Getter
 @Entity
-@Table(name = "TrolleyCart")
+@Table(name = "trolley_cart")
 
 public class TrolleyCartEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Long id;
+    private Long id;
 
     @OneToOne
     @JoinColumn(name = "user_id", unique = true)

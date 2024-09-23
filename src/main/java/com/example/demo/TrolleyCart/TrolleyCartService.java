@@ -46,8 +46,7 @@ public class TrolleyCartService {
         List<CartItemEntity> cartItems = trolleycart.getCartItems();
         OrderEntity orderEntity = createNewOrder(trolleycart, billing, shipping, cartItems);
         updateQuantityProduct(cartItems);
-        createNewOrderItem(orderEntity,cartItems);
-
+        createNewOrderItem(orderEntity, cartItems);
         trolleycart.getCartItems().clear();
         trolleyCartRepository.save(trolleycart);
 
@@ -60,29 +59,32 @@ public class TrolleyCartService {
         cartItemRepository.deleteAll(cartItems);
         cartItemRepository.flush();
     }
+
     public void updateQuantityProduct(List<CartItemEntity> cartItems) {
-        cartItems.forEach(e -> {
-            Optional<ProductEntity> productOpt = productRepository.findById(e.getProduct().getId());
-            if (productOpt.isPresent()) {
-                ProductEntity product = productOpt.get();
-                Long orderedQuantity = e.getQuantity();
-                Long availableQuantity = product.getPieces();
-                Long newQuantity = availableQuantity - orderedQuantity;
-
-                if (newQuantity < 0) {
-                    throw new InsufficientProductQuantityException("too much quantity, you can only " + product.getPieces() +"procuct name: " +product.getName() );
-                }
-                product.setPieces(newQuantity);
-                productRepository.save(product);
-
-            } else {
-                throw new ProductNotFoundException("Product not found for ID: " + e.getProduct().getId());
-            }
-        });
+        List<ProductEntity> products = cartItems
+                .stream()
+                .map(ci -> productRepository
+                        .findById(ci.getProduct().getId())
+                        .map(p -> getProduct(ci, p))
+                        .orElseThrow(() -> new ProductNotFoundException("Product not found for ID: " + ci.getProduct().getId()))
+                )
+                .toList();
+        productRepository.saveAll(products);
     }
 
-    public void createNewOrderItem(OrderEntity orderEntity, List<CartItemEntity> cartItems){
-        cartItems.forEach(e-> {
+    private static ProductEntity getProduct(CartItemEntity cartItem, ProductEntity product) {
+        Long orderedQuantity = cartItem.getQuantity();
+        Long availableQuantity = product.getPieces();
+        long newQuantity = availableQuantity - orderedQuantity;
+        if (newQuantity < 0) {
+            throw new InsufficientProductQuantityException("too much quantity, you can only " + product.getPieces() + "procuct name: " + product.getName());
+        }
+        product.setPieces(newQuantity);
+        return product;
+    }
+
+    public void createNewOrderItem(OrderEntity orderEntity, List<CartItemEntity> cartItems) {
+        cartItems.forEach(e -> {
             OrderItemEntity orderItemEntity = new OrderItemEntity();
             orderItemEntity.setOrderEntity(orderEntity);
             orderItemEntity.setProduct(e.getProduct());
@@ -92,7 +94,8 @@ public class TrolleyCartService {
         });
     }
 
-    public OrderEntity createNewOrder(TrolleyCartEntity trolleycart, Long billing, Long shipping, List<CartItemEntity> cartItems) {
+    public OrderEntity createNewOrder(TrolleyCartEntity trolleycart, Long billing, Long
+            shipping, List<CartItemEntity> cartItems) {
         OrderEntity orderEntity = new OrderEntity();
         orderEntity.setUser(trolleycart.getUserEntity());
         orderEntity.setOrderDate(LocalDateTime.now());
@@ -133,27 +136,28 @@ public class TrolleyCartService {
                 findByProductIdAndTrolleyCartId(productId, trolleyCart.getId());
 
         if (existingCartItem.isPresent()) {
-           return updateQuantityProduct(quantity, existingCartItem.get());
+            return updateQuantityProduct(quantity, existingCartItem.get());
 
         } else {
-          return createNewProductInTrolley(product,quantity,trolleyCart);
+            return createNewProductInTrolley(product, quantity, trolleyCart);
 
         }
 
     }
 
-public CartItemEntity createNewProductInTrolley(ProductEntity product, Long quantity, TrolleyCartEntity trolleyCart){
-    CartItemEntity newCartItem = new CartItemEntity();
-    newCartItem.setProduct(product);
-    newCartItem.setQuantity(quantity);
-    newCartItem.setTrolleyCart(trolleyCart);
-    cartItemRepository.save(newCartItem);
+    public CartItemEntity createNewProductInTrolley(ProductEntity product, Long quantity, TrolleyCartEntity
+            trolleyCart) {
+        CartItemEntity newCartItem = new CartItemEntity();
+        newCartItem.setProduct(product);
+        newCartItem.setQuantity(quantity);
+        newCartItem.setTrolleyCart(trolleyCart);
+        cartItemRepository.save(newCartItem);
 
-    trolleyCart.getCartItems().add(newCartItem);
-    trolleyCartRepository.save(trolleyCart);
+        trolleyCart.getCartItems().add(newCartItem);
+        trolleyCartRepository.save(trolleyCart);
 
-    return newCartItem;
-}
+        return newCartItem;
+    }
 
     public CartItemEntity updateQuantityProduct(Long quantity, CartItemEntity existingCartItem) {
         existingCartItem.setQuantity(quantity);

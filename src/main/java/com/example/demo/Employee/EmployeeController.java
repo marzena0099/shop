@@ -1,7 +1,9 @@
 package com.example.demo.Employee;
 
 import com.example.demo.Address.AddressEntity;
+import com.example.demo.DTO.EmployeeNotFoundException;
 import lombok.AllArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -31,15 +33,16 @@ public class EmployeeController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<EmployeeEntity> remove(@PathVariable Long id) {
-        return employeeService.remove(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<Void> remove(@PathVariable Long id) {
+        employeeService.remove(id);
+        return ResponseEntity.ok().build();
     }
-//
-    @PostMapping("/{employeeId}/address")
-    public ResponseEntity<EmployeeEntity> addAddressToEmployee(@PathVariable Long employeeId, @RequestBody AddressEntity address) {
-        EmployeeEntity updatedEmployee = employeeService.addAddressToEmployee(employeeId, address);
+
+
+
+    @PostMapping("/address")
+    public ResponseEntity<EmployeeEntity> addAddressToEmployee(@RequestParam Long employeeId, @RequestParam Long addressId) {
+        EmployeeEntity updatedEmployee = employeeService.addAddressToEmployee(employeeId, addressId);
         return ResponseEntity.ok(updatedEmployee);
     }
 

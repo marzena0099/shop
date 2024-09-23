@@ -18,10 +18,10 @@ import java.util.Set;
 public class DepartmentEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Long id;
-    String name;
-    String city;
-    String postalCode;
+    private Long id;
+    private String name;
+    private String city;
+    private String postalCode;
 
 
 //    @OneToMany(mappedBy = "department", cascade = CascadeType.REMOVE)

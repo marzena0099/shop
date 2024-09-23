@@ -12,15 +12,15 @@ import java.util.List;
 
 @Data
 @Entity
-@Table(name = "userEntity")
+@Table(name = "user_entity")
 public class UserEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Long id;
-    String name;
-    String surname;
-    String email;
-    String telephone;
+    private Long id;
+    private String name;
+    private String surname;
+    private String email;
+    private String telephone;
     @OneToOne(mappedBy = "userEntity")
     @JsonBackReference
     private TrolleyCartEntity trolleyCart;

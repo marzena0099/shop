@@ -1,3 +1,9 @@
+POST http://localhost:8080/api/employee
+Content-Type: application/json
+
+{}
+
+###
 POST http://localhost:8080/api/order/addWorkerToOrder?orderId=44&workerId=14
 
 
@@ -28,6 +34,8 @@ POST http://localhost:8080/api/trolleyCart/buy?userId=4&BillingId=17&shippingId=
 
 ###
 DELETE http://localhost:8080/api/employee/14
+
+
 
 
 

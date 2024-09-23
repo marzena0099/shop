@@ -11,16 +11,17 @@ import org.springframework.web.bind.annotation.RestController;
 
 @Data
 @Entity
+@Table(name = "unit_entity")
 public class UnitEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Long id;
-    String city;
+    private Long id;
+    private String city;
     @OneToOne(cascade = CascadeType.REMOVE)
-    @JoinColumn(name = "deparment_id")
+    @JoinColumn(name = "department_id" , referencedColumnName = "id")
     private DepartmentEntity department;
     @ManyToOne
-    @JoinColumn(name = "employee_id", nullable = true)
+    @JoinColumn(name = "employee_id", referencedColumnName = "id", nullable = true)
     @OnDelete(action = OnDeleteAction.SET_NULL)
     private EmployeeEntity employee;
 }

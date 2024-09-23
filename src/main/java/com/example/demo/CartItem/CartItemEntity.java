@@ -19,6 +19,8 @@ public class CartItemEntity{
     private Long id; // Identyfikator elementu koszyka
 
     private Long quantity; // Ilość przedmiotu w koszyku
+    //color
+
 
     // Relacja wiele do jednego z koszykiem
     @ManyToOne

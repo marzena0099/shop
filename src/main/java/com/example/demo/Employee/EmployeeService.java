@@ -2,6 +2,7 @@ package com.example.demo.Employee;
 
 import com.example.demo.Address.AddressEntity;
 import com.example.demo.Address.AddressRepository;
+import com.example.demo.DTO.AddressNotFoundException;
 import com.example.demo.DTO.EmployeeNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
@@ -23,19 +24,13 @@ public class EmployeeService {
         return employee;
     }
 
-    public EmployeeEntity addAddressToEmployee(Long employeeId, AddressEntity address) {
-        if (!isValidAddressType(address.getAddressType().name())) {
-            throw new IllegalArgumentException("Invalid address type: " + address.getAddressType());
-        }
+    public EmployeeEntity addAddressToEmployee(Long employeeId, Long addressID) {
         EmployeeEntity employee = employeeRepository.findById(employeeId)
-                .orElseThrow(() -> new EmployeeNotFoundException("Employee not found for ID: " + employeeId));
-
-        address.setEmployee(employee);
-        addressRepository.save(address);
+                .orElseThrow(() -> new EmployeeNotFoundException("not found employee"));
+        AddressEntity address = addressRepository.findById(addressID)
+                .orElseThrow(() -> new AddressNotFoundException("not found address"));
         employee.setAddress(address);
-        employeeRepository.save(employee);
-
-        return employee;
+        return employeeRepository.save(employee);
     }
 
     private boolean isValidAddressType(String addressType) {
@@ -62,11 +57,13 @@ public class EmployeeService {
         return employeeRepository.findAll();
     }
 
-    public Optional<EmployeeEntity> remove(Long id) {
-        return employeeRepository.findById(id)
-                .map(employee -> {
-                    employeeRepository.delete(employee);
-                    return employee;
-                });
+    public void remove(Long id) {
+        employeeRepository.findById(id)
+                .ifPresentOrElse(
+                        employeeRepository::delete,
+                        () -> {
+                            throw new EmployeeNotFoundException("Employee not found for ID: " + id);
+                        }
+                );
     }
 }

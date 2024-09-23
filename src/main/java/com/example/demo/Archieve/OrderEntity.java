@@ -31,8 +31,8 @@ public class OrderEntity {
     private LocalDateTime orderDate;
 
     private BigDecimal totalAmount;
-    @ManyToOne
-    @JoinColumn(name = "employee_id", nullable = true)
+    @ManyToOne(cascade = CascadeType.REMOVE)
+    @JoinColumn(name = "employee_id", nullable = true )
     @OnDelete(action = OnDeleteAction.SET_NULL)
     private EmployeeEntity employee;
 

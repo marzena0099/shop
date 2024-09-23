@@ -7,17 +7,18 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 @Entity
 @Data
+@Table(name = "product_entity")
 public class ProductEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Long id;
-    String name;
-    Double weight;
-    String color;
-    Double price;
-    Long pieces;
+    private Long id;
+    private String name;
+    private Double weight;
+    private String color;
+    private Double price;
+    private Long pieces;
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name="department_id")
+    @JoinColumn(name="department_id", referencedColumnName = "id")
     private DepartmentEntity department;
 
 
