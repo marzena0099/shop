@@ -1,7 +1,10 @@
 package com.example.demo.Unit;
 
+import com.example.demo.DTO.UnitNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -12,23 +15,20 @@ import java.util.Optional;
 public class UnitService {
     private final UnitRepository unitRepository;
 
+    @Transactional
     public UnitEntity add(UnitEntity entity) {
         return unitRepository.save(entity);
     }
 
     @Transactional
-    public Optional<UnitEntity> edit(Long id, UnitEntity unitEntity) {
-        Optional<UnitEntity> opt = unitRepository.findById(id);
-        if (!opt.isPresent()) {
-            return Optional.empty();
-        } else {
-            UnitEntity u = opt.get();
-            u.setCity(unitEntity.getCity());
-            u.setEmployee(unitEntity.getEmployee());
-            u.setDepartment(unitEntity.getDepartment());
-            unitRepository.save(u);
-            return Optional.of(u);
+    public UnitEntity edit(UnitEntity unitEntity) throws UnitNotFoundException {
+        Long unitId = unitEntity.getId();
+        if (!unitRepository.existsById(unitId)) {
+            System.out.println("df");
+            throw new UnitNotFoundException("not found unit");
         }
+        unitEntity.setId(unitId);
+        return unitRepository.save(unitEntity);
     }
 
     @Transactional
@@ -41,6 +41,7 @@ public class UnitService {
 
     }
 
+    @Transactional
     public List<UnitEntity> get() {
         return unitRepository.findAll();
     }

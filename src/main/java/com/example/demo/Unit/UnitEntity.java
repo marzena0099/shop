@@ -17,9 +17,12 @@ public class UnitEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String city;
+    private String postalCode;
+
     @OneToOne(cascade = CascadeType.REMOVE)
-    @JoinColumn(name = "department_id" , referencedColumnName = "id")
+    @JoinColumn(name = "department_id")
     private DepartmentEntity department;
+
     @ManyToOne
     @JoinColumn(name = "employee_id", referencedColumnName = "id", nullable = true)
     @OnDelete(action = OnDeleteAction.SET_NULL)
