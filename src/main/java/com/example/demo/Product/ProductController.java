@@ -2,6 +2,8 @@ package com.example.demo.Product;
 
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,23 +16,27 @@ public class ProductController {
     public final ProductService productService;
 
     @GetMapping()
-    public List<ProductEntity> getAllProduct() {
-        return productService.getAllProducts();
+    public ResponseEntity<List<ProductEntity>> getAllProduct() {
+        List<ProductEntity> listProducts = productService.getAllProducts();
+        return new ResponseEntity<>(listProducts,HttpStatus.OK);
     }
 
     @PostMapping()
-    public ProductEntity addProduct(@RequestBody ProductEntity p) {
-        return productService.addProduct(p);
+    public ResponseEntity<ProductEntity> addProduct(@RequestBody ProductEntity p) {
+        ProductEntity added= productService.addProduct(p);
+        return new ResponseEntity<>(added,HttpStatus.CREATED);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Object> delete(@PathVariable Long id) {
-        return productService.remove(id).map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<?> delete(@PathVariable Long id) {
+        productService.remove(id);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
-    @PostMapping("/edit/{id}")
-    public ResponseEntity<ProductEntity> editProduct(@PathVariable Long id, @RequestBody ProductEntity product) {
-        return productService.edit(id, product).map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
+    @PostMapping("/edit")
+    public ResponseEntity<ProductEntity> editProduct(@RequestBody ProductEntity product) {
+        ProductEntity productEdited = productService.edit(product);
+        return new ResponseEntity<>(productEdited, HttpStatus.OK);
     }
 }
 

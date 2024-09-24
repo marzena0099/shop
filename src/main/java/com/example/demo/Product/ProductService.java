@@ -1,5 +1,6 @@
 package com.example.demo.Product;
 
+import com.example.demo.DTO.ProductNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -13,38 +14,27 @@ public class ProductService {
     private final ProductRepository productRepository;
 
     public List<ProductEntity> getAllProducts() {
-
         return productRepository.findAll();
     }
 
+    @Transactional
     public ProductEntity addProduct(ProductEntity p) {
         productRepository.save(p);
         return p;
     }
 
-    public Optional<Object> remove(Long id) {
-        return productRepository.findById(id)
-                .map(product -> {
-                    productRepository.delete(product);
-                    return product;
-                });
+    public void remove(Long id) {
+        if (!productRepository.existsById(id)) {
+            throw new ProductNotFoundException("product not found");
+        }
+        productRepository.deleteById(id);
     }
-@Transactional
-    public Optional<ProductEntity> edit(Long id, ProductEntity p) {
-        Optional<ProductEntity> product = productRepository.findById(id);
-        if(!product.isPresent()){
-            return Optional.empty();
+
+    @Transactional
+    public ProductEntity edit(ProductEntity p) {
+        if (!productRepository.existsById(p.getId())) {
+            throw new ProductNotFoundException("not found product");
         }
-        else {
-            ProductEntity oldProduct =product.get();
-            oldProduct.setName(p.getName());
-//            oldProduct.setDepartment(p.getDepartment());
-            oldProduct.setColor(p.getColor());
-            oldProduct.setPieces(p.getPieces());
-            oldProduct.setPrice(p.getPrice());
-            oldProduct.setWeight(p.getWeight());
-            productRepository.save(oldProduct);
-            return Optional.of(oldProduct);
-        }
+        return productRepository.save(p);
     }
 }
