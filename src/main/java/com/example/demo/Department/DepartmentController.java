@@ -1,8 +1,8 @@
 package com.example.demo.Department;
 
 import lombok.AllArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -14,27 +14,28 @@ public class DepartmentController {
     private final DepartmentService departmentService;
 
     @PostMapping
-    public DepartmentEntity addDepartment(@RequestBody DepartmentEntity department) {
-        return departmentService.add(department);
+    public ResponseEntity<DepartmentEntity> addDepartment(@RequestBody DepartmentEntity department) {
+        DepartmentEntity department1= departmentService.add(department);
+        return new ResponseEntity<>(department1, HttpStatus.CREATED);
     }
 
-    @PostMapping("/{id}")
-    public ResponseEntity<DepartmentEntity> edit(@PathVariable Long id, @RequestBody DepartmentEntity department) {
-        return departmentService.edit(id, department)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    @PutMapping
+    public ResponseEntity<DepartmentEntity> edit(@RequestBody DepartmentEntity department) {
+        DepartmentEntity departmentEdited =  departmentService.edit(department);
+        return new ResponseEntity<>(departmentEdited, HttpStatus.OK);
+
     }
 
     @GetMapping
-    public List<DepartmentEntity> getAll() {
-        return departmentService.getAll();
+    public ResponseEntity<List<DepartmentEntity>> getAll() {
+        List<DepartmentEntity> listD= departmentService.getAll();
+        return new ResponseEntity<>(listD, HttpStatus.OK);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<DepartmentEntity> remove(@PathVariable Long id) {
-        return departmentService.remove(id).
-                map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<?> remove(@PathVariable Long id) {
+    departmentService.remove(id);
+    return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
 }

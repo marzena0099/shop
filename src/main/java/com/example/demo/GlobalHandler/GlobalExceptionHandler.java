@@ -46,6 +46,10 @@ public class GlobalExceptionHandler {
     public ResponseEntity<String> handleUnitNotFoundException(UnitNotFoundException e) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
     }
+    @ExceptionHandler(DepartmentNotFoundException.class)
+    public ResponseEntity<String> handleDepartmentNotFoundException(DepartmentNotFoundException e){
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+    }
 }
 
 
