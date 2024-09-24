@@ -8,10 +8,7 @@ import com.example.demo.Archieve.OrderItemRepository;
 import com.example.demo.Archieve.OrderRepository;
 import com.example.demo.CartItem.CartItemEntity;
 import com.example.demo.CartItem.CartItemRepository;
-import com.example.demo.DTO.AddressNotFoundException;
-import com.example.demo.DTO.InsufficientProductQuantityException;
-import com.example.demo.DTO.ProductNotFoundException;
-import com.example.demo.DTO.TrolleyCartNotFoundException;
+import com.example.demo.DTO.*;
 import com.example.demo.ENUM.OrderStatus;
 import com.example.demo.Product.ProductEntity;
 import com.example.demo.Product.ProductRepository;
@@ -25,7 +22,6 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @AllArgsConstructor
@@ -41,7 +37,7 @@ public class TrolleyCartService {
 
     @Transactional
     public TrolleyCartEntity buy(Long userId, Long billing, long shipping) {
-        if(!trolleyCartRepository.existsByUserEntity_Id(userId)){
+        if (!trolleyCartRepository.existsByUserEntity_Id(userId)) {
             throw new TrolleyCartNotFoundException("not found trolleyCart");
         }
         TrolleyCartEntity trolleyCart = trolleyCartRepository
@@ -51,14 +47,7 @@ public class TrolleyCartService {
         updateQuantityProduct(cartItems);
         createNewOrderItem(orderEntity, cartItems);
         trolleyCart.getCartItems().clear();
-       return trolleyCartRepository.save(trolleyCart);
-    }
-
-    @Transactional
-    public void deleteCartItems(List<CartItemEntity> cartItems) {
-        cartItemRepository.flush();
-        cartItemRepository.deleteAll(cartItems);
-        cartItemRepository.flush();
+        return trolleyCartRepository.save(trolleyCart);
     }
 
     public void updateQuantityProduct(List<CartItemEntity> cartItems) {
@@ -84,6 +73,7 @@ public class TrolleyCartService {
         return product;
     }
 
+    @Transactional
     public void createNewOrderItem(OrderEntity orderEntity, List<CartItemEntity> cartItems) {
         cartItems.forEach(e -> {
             OrderItemEntity orderItemEntity = new OrderItemEntity();
@@ -95,16 +85,13 @@ public class TrolleyCartService {
         });
     }
 
-    public OrderEntity createNewOrder(TrolleyCartEntity trolleycart, Long billing, Long
-            shipping, List<CartItemEntity> cartItems) {
+    @Transactional
+    public OrderEntity createNewOrder(TrolleyCartEntity trolleyCart, Long billing,
+                                      Long shipping, List<CartItemEntity> cartItems) {
         OrderEntity orderEntity = new OrderEntity();
-        orderEntity.setUser(trolleycart.getUserEntity());
+        orderEntity.setUser(trolleyCart.getUserEntity());
         orderEntity.setOrderDate(LocalDateTime.now());
-            if (billing != null) {
-                AddressEntity billingAddress = addressRepository.findById(billing)
-                        .orElseThrow(() -> new AddressNotFoundException("Billing address not found"));
-                orderEntity.setBillingAddressEntity(billingAddress);
-            }
+        checkBillingAddress(billing, orderEntity);
         orderEntity.setShippingAddressEntity(addressRepository.getReferenceById(shipping));
         orderEntity.setStatus(OrderStatus.PENDING);
         BigDecimal totalAmount = calculateTotalAmount(cartItems);
@@ -113,9 +100,17 @@ public class TrolleyCartService {
         return orderEntity;
     }
 
+    private void checkBillingAddress(Long billing, OrderEntity orderEntity) {
+        if (billing != null) {
+            AddressEntity billingAddress = addressRepository.findById(billing)
+                    .orElseThrow(() -> new AddressNotFoundException("Billing address not found"));
+            orderEntity.setBillingAddressEntity(billingAddress);
+        }
+    }
+
+    @Transactional
     public BigDecimal calculateTotalAmount(List<CartItemEntity> cartItems) {
         BigDecimal totalAmount;
-
         totalAmount = cartItems.stream()
                 .map(item -> {
                     BigDecimal price = BigDecimal.valueOf(item.getProduct().getPrice());
@@ -125,31 +120,22 @@ public class TrolleyCartService {
                     return price.multiply(quantity);
                 })
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
-
         return totalAmount;
     }
 
     @Transactional
     public CartItemEntity add(Long productId, Long quantity, Long idUser) {
         ProductEntity product = checkAvailabilityProduct(productId, quantity);
-
         TrolleyCartEntity trolleyCart = trolleyCartRepository.findByUserEntity_Id(idUser)
                 .orElseGet(() ->
                         createNewTrolley(idUser)
                 );
-        Optional<CartItemEntity> existingCartItem = cartItemRepository.
-                findByProductIdAndTrolleyCartId(productId, trolleyCart.getId());
-
-        if (existingCartItem.isPresent()) {
-            return updateQuantityProduct(quantity, existingCartItem.get());
-
-        } else {
-            return createNewProductInTrolley(product, quantity, trolleyCart);
-
-        }
-
+        return  cartItemRepository
+                .findByProductIdAndTrolleyCartId(productId, trolleyCart.getId())
+                .orElseGet(()->createNewProductInTrolley(product, quantity, trolleyCart));
     }
 
+@Transactional
     public CartItemEntity createNewProductInTrolley(ProductEntity product, Long quantity, TrolleyCartEntity
             trolleyCart) {
         CartItemEntity newCartItem = new CartItemEntity();
@@ -157,19 +143,12 @@ public class TrolleyCartService {
         newCartItem.setQuantity(quantity);
         newCartItem.setTrolleyCart(trolleyCart);
         cartItemRepository.save(newCartItem);
-
         trolleyCart.getCartItems().add(newCartItem);
         trolleyCartRepository.save(trolleyCart);
-
         return newCartItem;
     }
 
-    public CartItemEntity updateQuantityProduct(Long quantity, CartItemEntity existingCartItem) {
-        existingCartItem.setQuantity(quantity);
-        cartItemRepository.save(existingCartItem);
-        return existingCartItem;
-    }
-
+@Transactional
     public ProductEntity checkAvailabilityProduct(Long productId, Long quantity) {
         ProductEntity product = productRepository.findById(productId)
                 .orElseThrow(() -> new ProductNotFoundException("Product not found"));
@@ -179,10 +158,14 @@ public class TrolleyCartService {
         return product;
     }
 
+    @Transactional
     public TrolleyCartEntity createNewTrolley(Long idUser) {
-        Optional<UserEntity> user = userRepository.findById(idUser);
+        if(!userRepository.existsById(idUser)){
+            throw new UserNotFoundException("not found user");
+        }
+        UserEntity user = userRepository.getUserById(idUser);
         TrolleyCartEntity newCart = new TrolleyCartEntity();
-        newCart.setUserEntity(user.get());
+        newCart.setUserEntity(user);
         newCart.setCartItems(new ArrayList<>());
         trolleyCartRepository.save(newCart);
         return newCart;
