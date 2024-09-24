@@ -32,7 +32,7 @@ public class OrderEntity {
 
     private BigDecimal totalAmount;
     @ManyToOne(cascade = CascadeType.REMOVE)
-    @JoinColumn(name = "employee_id", nullable = true )
+    @JoinColumn(name = "employee_id")
     @OnDelete(action = OnDeleteAction.SET_NULL)
     private EmployeeEntity employee;
 
