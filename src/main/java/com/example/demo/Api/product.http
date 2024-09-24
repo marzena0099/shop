@@ -126,13 +126,13 @@ Content-Type: application/json
 
 {
   "productId": 2,
-  "ilosc": 12,
-  "uzytkownikId": 4
+  "ilosc": 191,
+  "uzytkownikId": 5
 
 }
 
 ###
-POST http://localhost:8080/api/trolleyCart/buy/1
+POST http://localhost:8080/api/trolleyCart/buy?userId=5&shippingId=21
 
 
 

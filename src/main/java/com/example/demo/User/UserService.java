@@ -31,7 +31,6 @@ public class UserService {
         if (!userRepository.existsById(userId)) {
             throw new UserNotFoundException("not found user");
         }
-        userEntity.setId(userId);
         return userRepository.save(userEntity);
     }
 

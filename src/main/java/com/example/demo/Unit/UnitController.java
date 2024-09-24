@@ -30,7 +30,7 @@ public class UnitController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<UnitEntity> remove(Long id) {
+    public ResponseEntity<?> remove(Long id) {
       unitService.remove(id);
       return new ResponseEntity<>(HttpStatus.NO_CONTENT);
 

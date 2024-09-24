@@ -3,7 +3,6 @@ package com.example.demo.Product;
 import com.example.demo.Department.DepartmentEntity;
 import jakarta.persistence.*;
 import lombok.Data;
-import org.springframework.format.annotation.DateTimeFormat;
 
 @Entity
 @Data

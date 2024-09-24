@@ -24,10 +24,8 @@ public class UnitService {
     public UnitEntity edit(UnitEntity unitEntity) throws UnitNotFoundException {
         Long unitId = unitEntity.getId();
         if (!unitRepository.existsById(unitId)) {
-            System.out.println("df");
             throw new UnitNotFoundException("not found unit");
         }
-        unitEntity.setId(unitId);
         return unitRepository.save(unitEntity);
     }
 

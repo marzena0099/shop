@@ -20,8 +20,7 @@ public class DepartmentEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String name;
-    private String city;
-    private String postalCode;
+
 
 
 //    @OneToMany(mappedBy = "department", cascade = CascadeType.REMOVE)

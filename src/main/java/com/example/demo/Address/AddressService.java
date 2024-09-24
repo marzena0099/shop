@@ -5,10 +5,16 @@ import com.example.demo.ENUM.AddressType;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @AllArgsConstructor
 public class AddressService {
     private final AddressRepository addressRepository;
+
+    private boolean isValidAddressType(String addressType) {
+        return List.of("RESIDENTIAL", "BILLING", "SHIPPING").contains(addressType);
+    }
     public AddressEntity addAddress(String street, String city, String postalCode, String country, AddressType addressType) {
         AddressEntity addressEntity = new AddressEntity();
         addressEntity.setStreet(street);

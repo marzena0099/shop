@@ -19,9 +19,9 @@ public class DepartmentService {
             return Optional.empty();
         }
         DepartmentEntity changedDep= optDep.get();
-        changedDep.setCity(dp.getCity());
+//        changedDep.setCity(dp.getCity());
 //        changedDep.setEmployees(dp.getEmployees());
-        changedDep.setPostalCode(dp.getPostalCode());
+//        changedDep.setPostalCode(dp.getPostalCode());
         changedDep.setName(dp.getName());
 //        changedDep.setProducts(dp.getProducts());
         departmentRepository.save(changedDep);
