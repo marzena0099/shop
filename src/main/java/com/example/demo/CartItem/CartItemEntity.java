@@ -12,15 +12,13 @@ import lombok.ToString;
 @Table(name = "cart_item")
 @Setter
 @Getter
-public class CartItemEntity{
+public class CartItemEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id; // Identyfikator elementu koszyka
-
-    private Long quantity; // Ilość przedmiotu w koszyku
-    //color
-
+    private Long id;
+    private String color;
+    private Long quantity;
 
     // Relacja wiele do jednego z koszykiem
     @ManyToOne
@@ -33,7 +31,6 @@ public class CartItemEntity{
     @ManyToOne
     @JoinColumn(name = "product_id")
     private ProductEntity product;
-
 
 
 }
