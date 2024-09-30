@@ -19,9 +19,9 @@ public class EmployeeController {
         return new ResponseEntity<>(added, HttpStatus.CREATED);
     }
 
-    @PutMapping("/edit")
-    public ResponseEntity<EmployeeEntity> edit(@RequestBody EmployeeEntity employee) {
-        EmployeeEntity edited= employeeService.edit(employee);
+    @PutMapping("/edit/{employeeId}")
+    public ResponseEntity<EmployeeEntity> edit(@RequestParam Long employeeId, @RequestBody EmployeeEntity employee) {
+        EmployeeEntity edited= employeeService.edit(employeeId, employee);
                 return new ResponseEntity<>(edited, HttpStatus.OK);
     }
 

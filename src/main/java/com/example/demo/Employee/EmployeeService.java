@@ -33,10 +33,11 @@ public class EmployeeService {
 
 
     @Transactional
-    public EmployeeEntity edit(EmployeeEntity employee) {
-        if (!employeeRepository.existsById(employee.getId())) {
+    public EmployeeEntity edit(Long employeeId, EmployeeEntity employee) {
+        if (!employeeRepository.existsById(employeeId)) {
             throw new EmployeeNotFoundException("not found employee");
         }
+        employee.setId(employeeId);
         return employeeRepository.save(employee);
     }
 

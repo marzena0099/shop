@@ -22,11 +22,11 @@ public class UserService {
     }
 
     @Transactional
-    public UserEntity edit(UserEntity userEntity) {
-        Long userId = userEntity.getId();
+    public UserEntity edit(Long userId, UserEntity userEntity) {
         if (!userRepository.existsById(userId)) {
             throw new UserNotFoundException("not found user");
         }
+        userEntity.setId(userId);
         return userRepository.save(userEntity);
     }
 
