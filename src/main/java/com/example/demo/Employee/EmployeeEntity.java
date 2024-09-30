@@ -12,23 +12,22 @@ import lombok.Data;
 public class EmployeeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-   private Long id;
+    private Long id;
     private String name;
     private String surname;
-    private String PESEL;
+    private String pesel;
+    private String position;
     @ManyToOne
     @JoinColumn(name = "department_id")
     private DepartmentEntity department;
 
 
-
-
     @Enumerated(EnumType.STRING)
-    private Degree degree;  // Stopień doświadczenia związany z pracownikiem (JUNIOR, MID, SENIOR)
+    private Degree degree;
 
 
-@OneToOne(cascade = CascadeType.ALL)
-@JoinColumn(name = "address_id", referencedColumnName = "id")
-private AddressEntity address;
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "address_id", referencedColumnName = "id")
+    private AddressEntity address;
 
 }

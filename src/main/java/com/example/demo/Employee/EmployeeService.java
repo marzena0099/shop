@@ -18,8 +18,7 @@ public class EmployeeService {
 
     @Transactional
     public EmployeeEntity add(EmployeeEntity employee) {
-        employeeRepository.save(employee);
-        return employee;
+       return employeeRepository.save(employee);
     }
 
     @Transactional

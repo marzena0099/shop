@@ -5,13 +5,9 @@ import com.example.demo.Address.AddressRepository;
 import com.example.demo.DTO.UserNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
-import org.apache.catalina.User;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.autoconfigure.amqp.RabbitConnectionDetails;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Optional;
+
 
 @Service
 @AllArgsConstructor
@@ -36,18 +32,21 @@ public class UserService {
 
     @Transactional
     public void remove(Long userId) {
-        if(!userRepository.existsById(userId)){
+        if (!userRepository.existsById(userId)) {
             throw new UserNotFoundException("not found user");
         }
         userRepository.deleteById(userId);
 
     }
-@Transactional
-    public UserEntity addAddressToUser(Long idUser, AddressEntity address) {
+
+    @Transactional
+    public UserEntity addAddressToUser(Long idUser, Long addressId) {
         UserEntity user = userRepository.findById(idUser)
-                .orElseThrow(()-> new UserNotFoundException("user not found"));
-        address.setUser(user);
+                .orElseThrow(() -> new UserNotFoundException("user not found"));
+        AddressEntity address = addressRepository.findById(addressId)
+                .orElseThrow(() -> new UserNotFoundException("address not found"));
         user.getAddresses().add(address);
+        address.setUser(user);
         addressRepository.save(address);
         return userRepository.save(user);
     }

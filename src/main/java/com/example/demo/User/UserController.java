@@ -13,32 +13,32 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
     private UserService userService;
     private String abc;
+
     @PostMapping
-    public ResponseEntity<UserEntity> add(@RequestBody UserEntity user){
-              UserEntity userEntity= userService.add(user);
+    public ResponseEntity<UserEntity> add(@RequestBody UserEntity user) {
+        UserEntity userEntity = userService.add(user);
         return new ResponseEntity<>(userEntity, HttpStatus.CREATED);
     }
-
-    @PostMapping("/{userId}/address")
-    public ResponseEntity<UserEntity> addAddress(@PathVariable Long userId, @RequestBody AddressEntity address){
-        UserEntity user = userService.addAddressToUser(userId,address);
+    @PostMapping("/{userId}/{addressId}/address")
+    public ResponseEntity<UserEntity> addAddress(@PathVariable Long userId, @PathVariable Long addressId) {
+        UserEntity user = userService.addAddressToUser(userId, addressId);
         return new ResponseEntity<>(user, HttpStatus.OK);
     }
 
     @PutMapping
-    public ResponseEntity<?> edit( @RequestBody UserEntity user){
-            UserEntity updatedUser = userService.edit(user);
-            return new ResponseEntity<>(updatedUser,HttpStatus.OK);
+    public ResponseEntity<?> edit(@RequestBody UserEntity user) {
+        UserEntity updatedUser = userService.edit(user);
+        return new ResponseEntity<>(updatedUser, HttpStatus.OK);
     }
+
     @DeleteMapping("/{userId}")
-    public ResponseEntity<?> remove(@PathVariable Long userId){
+    public ResponseEntity<?> remove(@PathVariable Long userId) {
         userService.remove(userId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
 
-
-    }
+}
 
 
 
