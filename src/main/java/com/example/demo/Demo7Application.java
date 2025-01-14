@@ -15,18 +15,4 @@ public class Demo7Application {
     public static void main(String[] args) {
         SpringApplication.run(Demo7Application.class, args);
     }
-
-    @Autowired
-    ApplicationContext app;
-
-    @GetMapping("/dupa")
-    String abc() {
-        String a = app.getBean("abc", String.class);
-        System.out.println(a);
-        app.getBean(EmployeeService.class);
-        new EmployeeService(null, null);
-        return a;
-
-    }
-
 }
